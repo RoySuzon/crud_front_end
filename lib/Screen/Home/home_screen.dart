@@ -1,6 +1,10 @@
+import 'dart:developer';
+
 import 'package:crud_front_end/Bloc/Home/bloc/home_bloc.dart';
+import 'package:crud_front_end/Controllers/api_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Homscreeen extends StatefulWidget {
   const Homscreeen({super.key});
@@ -21,9 +25,26 @@ class _HomscreeenState extends State<Homscreeen> {
     _bodyController.clear();
   }
 
+  Future<void> getBaseUrl() async {
+    final sp = await SharedPreferences.getInstance();
+
+    // await sp.clear();
+
+    if (sp.getString('baseUrl') == null) {
+      log('api hit');
+      await ApiController.getSplashData();
+      bloc.add(HomeInititalEvent());
+    } else {
+      log('api not hit');
+      bloc.add(HomeInititalEvent());
+    }
+  }
+
   @override
   void initState() {
-    bloc.add(HomeInititalEvent());
+    getBaseUrl();
+    // ApiController().getSplashData();
+
     super.initState();
   }
 
@@ -44,7 +65,8 @@ class _HomscreeenState extends State<Homscreeen> {
           },
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.miniCenterFloat,
+      floatingActionButtonLocation:
+          FloatingActionButtonLocation.miniCenterFloat,
       floatingActionButton: FloatingActionButton.small(
         onPressed: () {
           showDialog(
@@ -86,8 +108,12 @@ class _HomscreeenState extends State<Homscreeen> {
                         if (_titleController.text.trim().isNotEmpty) {
                           bloc.add(AddUserEvent(
                               title: _titleController.text,
-                              author: _authorController.text.trim() ==''?null:_authorController.text.trim(),
-                              body:  _bodyController.text.trim() ==''?null:_bodyController.text.trim()));
+                              author: _authorController.text.trim() == ''
+                                  ? null
+                                  : _authorController.text.trim(),
+                              body: _bodyController.text.trim() == ''
+                                  ? null
+                                  : _bodyController.text.trim()));
                           controllerClear();
                         }
 
@@ -166,7 +192,8 @@ class _HomscreeenState extends State<Homscreeen> {
                                                   .trim()
                                                   .isNotEmpty) {
                                                 bloc.add(UpdateUserEvent(
-                                                    title: _titleController.text,
+                                                    title:
+                                                        _titleController.text,
                                                     author:
                                                         _authorController.text,
                                                     body: _bodyController.text,
@@ -186,7 +213,8 @@ class _HomscreeenState extends State<Homscreeen> {
                           subtitle: Text(data.author.toString()),
                           trailing: IconButton(
                               onPressed: () {
-                                bloc.add(RemoveUserEvent(id: data.id.toString()));
+                                bloc.add(
+                                    RemoveUserEvent(id: data.id.toString()));
                               },
                               icon: const Icon(Icons.delete)),
                           title: Text(data.title.toString()),

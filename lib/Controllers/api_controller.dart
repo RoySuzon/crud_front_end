@@ -5,12 +5,14 @@ import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiController {
-  Future<bool> getSplashData() async {
+static  getSplashData() async {
+    final sp = await SharedPreferences.getInstance();
+  
     try {
-      final res = await get(Uri.parse("https://crud-99vs.onrender.com/data"));
-      final sp = await SharedPreferences.getInstance();
+        final res = await get(Uri.parse("https://crud-99vs.onrender.com/data"));
       if (jsonDecode(res.body)['status'] == true) {
-        await sp.setString('baseUrl', jsonDecode(res.body)['baseUrl']);
+        await sp.setString(
+            'baseUrl', jsonDecode(res.body)['baseUrl'].toString());
         return true;
       } else {
         return false;
@@ -20,14 +22,14 @@ class ApiController {
     }
   }
 
-  Future<String> getBaseUrl() async {
+  Future<String?> getBaseUrl() async {
     final sp = await SharedPreferences.getInstance();
-    return sp.getString('baseUrl') ?? '';
+    return sp.getString('baseUrl') ;
   }
 
 //GetUserAPi==========================
   Future<String> getUsers() async {
-    String baseUrl = await getBaseUrl();
+    String? baseUrl = await getBaseUrl();
 
     String uri = "$baseUrl/api/user";
     log(uri);
@@ -45,7 +47,7 @@ class ApiController {
     String? author,
     String? body,
   }) async {
-    String baseUrl = await getBaseUrl();
+    String? baseUrl = await getBaseUrl();
 
     String uri = "$baseUrl/api/post/";
     log(uri);
@@ -62,12 +64,14 @@ class ApiController {
   }
 
 //updateUserAPi==========================
-  Future<String> updateUser(String id,{required String title,String ?author,String ?body }) async {
-    String baseUrl = await getBaseUrl();
+  Future<String> updateUser(String id,
+      {required String title, String? author, String? body}) async {
+    String? baseUrl = await getBaseUrl();
 
     String uri = "$baseUrl/api/update/${id}";
     log(uri);
-    final res = await post(Uri.parse(uri), body: {"title": title,"author":author,"bodt":body});
+    final res = await post(Uri.parse(uri),
+        body: {"title": title, "author": author, "bodt": body});
     try {
       print(res.body);
       return res.body;
@@ -78,7 +82,7 @@ class ApiController {
 
 //deleteateUserAPi==========================
   Future<String> deleteUser(String id) async {
-    String baseUrl = await getBaseUrl();
+    String? baseUrl = await getBaseUrl();
     String uri = "$baseUrl/api/delete/$id";
     log(uri);
     final res = await get(Uri.parse(uri));
