@@ -115,9 +115,10 @@ class _HomscreeenState extends State<Homscreeen> {
                                   ? null
                                   : _bodyController.text.trim()));
                           controllerClear();
+                          Navigator.pop(context);
+                        } else {
+                          getToast('Error');
                         }
-
-                        Navigator.pop(context);
                       },
                     )
                   ],
