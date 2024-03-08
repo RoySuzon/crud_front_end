@@ -23,3 +23,12 @@ class RemoveUserEvent extends HomeEvent {
     required this.id,
   });
 }
+class UpdateUserEvent extends HomeEvent {
+  final String id;
+  final String title;
+  final String ? author;
+  final String? body;
+
+  UpdateUserEvent({required this.id, required this.title, required this.author, required this.body});
+  
+}

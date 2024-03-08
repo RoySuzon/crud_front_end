@@ -62,12 +62,12 @@ class ApiController {
   }
 
 //updateUserAPi==========================
-  Future<String> updateUser(String id) async {
+  Future<String> updateUser(String id,{required String title,String ?author,String ?body }) async {
     String baseUrl = await getBaseUrl();
 
     String uri = "$baseUrl/api/update/${id}";
     log(uri);
-    final res = await post(Uri.parse(uri), body: {"title": "title"});
+    final res = await post(Uri.parse(uri), body: {"title": title,"author":author,"bodt":body});
     try {
       print(res.body);
       return res.body;

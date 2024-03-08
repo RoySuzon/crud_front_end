@@ -14,6 +14,13 @@ class _HomscreeenState extends State<Homscreeen> {
   final _authorController = TextEditingController();
   final _bodyController = TextEditingController();
   final bloc = HomeBloc();
+
+  void controllerClear() {
+    _titleController.clear();
+    _authorController.clear();
+    _bodyController.clear();
+  }
+
   @override
   void initState() {
     bloc.add(HomeInititalEvent());
@@ -37,29 +44,30 @@ class _HomscreeenState extends State<Homscreeen> {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButtonLocation: FloatingActionButtonLocation.miniCenterFloat,
+      floatingActionButton: FloatingActionButton.small(
         onPressed: () {
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
-              actionsPadding: EdgeInsets.all(30),
+              actionsPadding: const EdgeInsets.all(30),
               actions: [
                 TextField(
                   controller: _titleController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                       border: OutlineInputBorder(), hintText: 'ENTER NAME'),
                 ),
                 const SizedBox(height: 20),
                 TextField(
                   controller: _authorController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       hintText: 'ENTER Author Name'),
                 ),
                 const SizedBox(height: 20),
                 TextField(
                   controller: _bodyController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                       border: OutlineInputBorder(), hintText: 'ENTER Details'),
                 ),
                 const SizedBox(height: 20),
@@ -78,8 +86,9 @@ class _HomscreeenState extends State<Homscreeen> {
                         if (_titleController.text.trim().isNotEmpty) {
                           bloc.add(AddUserEvent(
                               title: _titleController.text,
-                              author: _authorController.text,
-                              body: _bodyController.text));
+                              author: _authorController.text.trim() ==''?null:_authorController.text.trim(),
+                              body:  _bodyController.text.trim() ==''?null:_bodyController.text.trim()));
+                          controllerClear();
                         }
 
                         Navigator.pop(context);
@@ -97,21 +106,94 @@ class _HomscreeenState extends State<Homscreeen> {
         bloc: bloc,
         builder: (context, state) {
           if (state is HomeSucessState) {
-            return ListView.builder(
-              // reverse: true,
-              itemCount: state.data.users!.length,
-              itemBuilder: (context, index) {
-                final data = state.data.users!.reversed.toList()[index];
-                return ListTile(
-                  trailing: IconButton(
-                      onPressed: () {
-                        bloc.add(RemoveUserEvent(id: data.id.toString()));
-                      },
-                      icon: Icon(Icons.delete)),
-                  title: Text(data.title.toString()),
-                );
-              },
-            );
+            return state.data.users!.isEmpty
+                ? Center(
+                    child: Text('There is no Data!'),
+                  )
+                : ListView.builder(
+                    // reverse: true,
+                    itemCount: state.data.users!.length,
+
+                    itemBuilder: (context, index) {
+                      final data = state.data.users!.reversed.toList()[index];
+                      return Card(
+                        child: ListTile(
+                          leading: IconButton(
+                              onPressed: () {
+                                _authorController.text = data.author.toString();
+                                _titleController.text = data.title.toString();
+                                _bodyController.text = data.body.toString();
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    actionsPadding: EdgeInsets.all(30),
+                                    actions: [
+                                      TextField(
+                                        controller: _titleController,
+                                        decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            hintText: 'ENTER NAME'),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      TextField(
+                                        controller: _authorController,
+                                        decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            hintText: 'ENTER Author Name'),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      TextField(
+                                        controller: _bodyController,
+                                        decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            hintText: 'ENTER Details'),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: [
+                                          ActionChip(
+                                            label: const Text('NO'),
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            },
+                                          ),
+                                          ActionChip(
+                                            label: const Text('YES'),
+                                            onPressed: () {
+                                              if (_titleController.text
+                                                  .trim()
+                                                  .isNotEmpty) {
+                                                bloc.add(UpdateUserEvent(
+                                                    title: _titleController.text,
+                                                    author:
+                                                        _authorController.text,
+                                                    body: _bodyController.text,
+                                                    id: data.id.toString()));
+                                                controllerClear();
+                                              }
+                                              Navigator.pop(context);
+                                            },
+                                          )
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                );
+                              },
+                              icon: Icon(Icons.edit)),
+                          subtitle: Text(data.author.toString()),
+                          trailing: IconButton(
+                              onPressed: () {
+                                bloc.add(RemoveUserEvent(id: data.id.toString()));
+                              },
+                              icon: const Icon(Icons.delete)),
+                          title: Text(data.title.toString()),
+                        ),
+                      );
+                    },
+                  );
           } else {
             return Center(
               child: CircularProgressIndicator(),
